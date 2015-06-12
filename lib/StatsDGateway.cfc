@@ -9,7 +9,6 @@ component
 	variables.hostInetAddress = "";
 	variables.port = "";
 	variables.randomNumberGenerator = "";
-	variables.socket = "";
 
 
 	/**
@@ -27,9 +26,6 @@ component
 		// Store private variables.
 		setHost( host );
 		setPort( port );
-
-		// Create our outbound UDP socket.
-		socket = createOutboundSocket();
 
 		// Create our random number generator (used for sampling).
 		randomNumberGenerator = createObject( "java", "java.util.Random" )
@@ -388,25 +384,6 @@ component
 
 
 	/**
-	* I create the datagram socket over which we will be sending UPD requests.
-	* 
-	* @output false
-	*/
-	private any function createOutboundSocket() {
-
-		// By using "null" as our constructor argument, we are not binding to any 
-		// particular inbound port since we don't need to - we are only sending outbound 
-		// UDP messages.
-		var socket = createObject( "java", "java.net.DatagramSocket" )
-			.init( javaCast( "null", "" ) )
-		;
-
-		return( socket );
-
-	}
-
-
-	/**
 	* I format the given sample rate for use in the metric payload.
 	* 
 	* @rate I am the sample rate to format.
@@ -420,22 +397,36 @@ component
 
 
 	/**
-	* I send the given metric over the outbound UDP socket. I return [this] for method
-	* chaining.
+	* I send the given metric over a UDP socket to the statsD server. I return [this] for 
+	* method chaining.
 	* 
 	* @metric I am the metric being sent.
 	* @output false
 	*/
 	private any function sendMetric( required string metric ) {
 
-		var packet = createObject( "java", "java.net.DatagramPacket" ).init(
-			charsetDecode( metric, "utf-8" ),
-			javaCast( "int", len( metric ) ),
-			hostInetAddress,
-			javaCast( "int", port )
-		);
+		try {
 
-		socket.send( packet );
+			var socket = createObject( "java", "java.net.DatagramSocket" ).init();
+
+			var packet = createObject( "java", "java.net.DatagramPacket" ).init(
+				charsetDecode( metric, "utf-8" ),
+				javaCast( "int", len( metric ) ),
+				hostInetAddress,
+				javaCast( "int", port )
+			);
+
+			socket.send( packet );
+
+		} finally {
+
+			if ( structKeyExists( local, "socket" ) ) {
+
+				socket.close();
+
+			}
+
+		}
 
 		return( this );
 
