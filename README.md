@@ -8,27 +8,29 @@ server.
 
 ## Constructor
 
-* init( host, port )
+* init( [ host = "localhost" [ , port = 8125 [ , prefix = "" [ , suffix = "" ]]]] )
 
 ## Metrics
 
 ### Count
 
-* count( key, delta )
-* decrement( key [, delta = 1] )
-* increment( key [, delta = 1] )
-* sampleCount( rate, key, delta )
+* count( key, delta [ , rate = 1 ] )
+* decrement( key [ , delta = 1 [ , rate = 1 ]] )
+* increment( key [ , delta = 1 [ , rate = 1 ]] )
 
 ### Gauge
 
-* decrementGauge( key, delta )
-* gauge( key, value )
-* incrementGauge( key, delta )
+* decrementGauge( key, delta [ , rate = 1 ] )
+* gauge( key, value [ , rate = 1 ] )
+* incrementGauge( key, delta [ , rate = 1 ] )
 
 ### Timing
 
-* sampleTiming( rate, key, duration )
-* timing( key, duration )
+* timing( key, duration [ , rate = 1 ] )
+
+### Unique Sets
+
+* unique( group, member [ , rate = 1 ] )
 
 
 [1]: http://www.bennadel.com

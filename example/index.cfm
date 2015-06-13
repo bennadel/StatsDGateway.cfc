@@ -2,46 +2,42 @@
 	
 	// Param the incoming variables.
 	param name="url.action" type="string" default="";
-	param name="url.rate" type="string" default="";
 	param name="url.key" type="string" default="";
 	param name="url.value" type="string" default="";
+	param name="url.rate" type="numeric" default="1";
 
 	// Check to see which action we are sending.
 	if ( url.action == "count" ) {
 
-		application.statsdGateway.count( key, value );
+		application.statsdGateway.count( key, value, rate );
 
 	} else if ( url.action == "increment" ) {
 
-		application.statsdGateway.increment( key, value );
+		application.statsdGateway.increment( key, value, rate );
 
 	} else if ( url.action == "decrement" ) {
 
-		application.statsdGateway.decrement( key, value );
+		application.statsdGateway.decrement( key, value, rate );
 
 	} else if ( url.action == "gauge" ) {
 
-		application.statsdGateway.gauge( key, value );
+		application.statsdGateway.gauge( key, value, rate );
 
 	} else if ( url.action == "incrementGauge" ) {
 
-		application.statsdGateway.incrementGauge( key, value );
+		application.statsdGateway.incrementGauge( key, value, rate );
 
 	} else if ( url.action == "decrementGauge" ) {
 
-		application.statsdGateway.decrementGauge( key, value );
+		application.statsdGateway.decrementGauge( key, value, rate );
 
 	} else if ( url.action == "timing" ) {
 
-		application.statsdGateway.timing( key, value );
+		application.statsdGateway.timing( key, value, rate );
 
-	} else if ( url.action == "sampleCount" ) {
+	} else if ( url.action == "unique" ) {
 
-		application.statsdGateway.sampleCount( rate, key, value );
-
-	} else if ( url.action == "sampleTiming" ) {
-
-		application.statsdGateway.sampleTiming( rate, key, value );
+		application.statsdGateway.unique( key, value, rate );
 
 	}
 
@@ -91,10 +87,16 @@
 				<a href="#cgi.script_name#?action=incrementGauge&key=foo&value=4">Increment Gauge "foo" 4</a>
 			</li>
 			<li>
-				<a href="#cgi.script_name#?action=decrementGauge&key=foo&value=4">Decrement Gauge "foo" 6</a>
+				<a href="#cgi.script_name#?action=decrementGauge&key=foo&value=6">Decrement Gauge "foo" 6</a>
 			</li>
 			<li>
 				<a href="#cgi.script_name#?action=timing&key=foo&value=250">Timing "foo" 250ms</a>
+			</li>
+			<li>
+				<a href="#cgi.script_name#?action=unique&key=userids&value=1">Unique "userids" 1</a>
+			</li>
+			<li>
+				<a href="#cgi.script_name#?action=unique&key=userids&value=2">Unique "userids" 2</a>
 			</li>
 		</ul>
 
@@ -108,10 +110,10 @@
 
 		<ul>
 			<li>
-				<a href="#cgi.script_name#?action=sampleCount&rate=0.5&key=foo&value=-1">Sample (0.5) Count "foo" -1</a>
+				<a href="#cgi.script_name#?action=count&key=foo&value=-1&rate=0.5">Sample (0.5) Count "foo" -1</a>
 			</li>
 			<li>
-				<a href="#cgi.script_name#?action=sampleTiming&rate=0.5&key=foo&value=300">Timing (0.5) "foo" 300ms</a>
+				<a href="#cgi.script_name#?action=timing&key=foo&value=300&rate=0.5">Sample (0.5) Timing "foo" 300ms</a>
 			</li>
 		</ul>
 
