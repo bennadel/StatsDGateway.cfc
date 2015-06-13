@@ -99,7 +99,7 @@ component
 	*/
 	public any function decrementGauge(
 		required string key,
-		required numeric delta
+		required numeric delta,
 		numeric rate = 1
 		) {
 
@@ -477,7 +477,7 @@ component
 	*/
 	public any function timing(
 		required string key,
-		required numeric duration
+		required numeric duration,
 		numeric rate = 1
 		) {
 
@@ -537,7 +537,7 @@ component
 	*/
 	private string function formatRate( required numeric rate ) {
 
-		return( numberFormat( rate, "0.0" ) );
+		return( numberFormat( rate, "0.000" ) );
 
 	}
 
