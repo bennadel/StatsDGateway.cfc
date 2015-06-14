@@ -9,35 +9,35 @@
 	// Check to see which action we are sending.
 	if ( url.action == "count" ) {
 
-		application.statsdGateway.count( key, value, rate );
+		application.statsdClient.count( key, value, rate );
 
 	} else if ( url.action == "increment" ) {
 
-		application.statsdGateway.increment( key, value, rate );
+		application.statsdClient.increment( key, value, rate );
 
 	} else if ( url.action == "decrement" ) {
 
-		application.statsdGateway.decrement( key, value, rate );
+		application.statsdClient.decrement( key, value, rate );
 
 	} else if ( url.action == "gauge" ) {
 
-		application.statsdGateway.gauge( key, value, rate );
+		application.statsdClient.gauge( key, value, rate );
 
 	} else if ( url.action == "incrementGauge" ) {
 
-		application.statsdGateway.incrementGauge( key, value, rate );
+		application.statsdClient.incrementGauge( key, value, rate );
 
 	} else if ( url.action == "decrementGauge" ) {
 
-		application.statsdGateway.decrementGauge( key, value, rate );
+		application.statsdClient.decrementGauge( key, value, rate );
 
 	} else if ( url.action == "timing" ) {
 
-		application.statsdGateway.timing( key, value, rate );
+		application.statsdClient.timing( key, value, rate );
 
 	} else if ( url.action == "unique" ) {
 
-		application.statsdGateway.unique( key, value, rate );
+		application.statsdClient.unique( key, value, rate );
 
 	}
 
@@ -53,12 +53,12 @@
 	<head>
 		<meta charset="utf-8" />
 
-		<title>StatsDGateway.cfc Example</title>
+		<title>statsdClient.cfc Example</title>
 	</head>
 	<body>
 
 		<h1>
-			StatsDGateway.cfc Example
+			statsdClient.cfc Example
 		</h1>
 
 		<p>

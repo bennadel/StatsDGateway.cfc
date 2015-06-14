@@ -4,16 +4,26 @@ component
 	hint = "I test the StatsDGateway component."
 	{
 
-	public void function testNonSampleMethods() {
+	public void function test_that_default_factory_works() {
 
-		// NOTE: This is the sub-classed version that captures the messages instead
-		// of sending them over UDP.
-		var gateway = new testables.StatsDGateway()
+		var client = new lib.StatsDGateway().createClient();
+
+	}
+
+
+	public void function test_that_non_sample_method_calls_work() {
+
+		// Since we want to test the through-put, we are going to manually construct a client
+		// that uses a buffered transport rather than a UDP transport.
+		var transport = new lib.transport.BufferedTransport();
+		var randomNumberGenerator = new lib.util.RandomNumberGenerator();
+		
+		var client = new lib.client.StatsDClient( transport, randomNumberGenerator )
 			.setPrefix( "head." )
 			.setSuffix( ".tail" )
 		;
 
-		gateway
+		client
 			.count( "a", 1 )
 			.count( "b", -2 )
 			.increment( "c" )
@@ -33,7 +43,7 @@ component
 			.unique( "q", "that" )
 		;
 
-		var sentMessages = gateway.getSentMessages();
+		var sentMessages = transport.getSentMessages();
 
 		var expectedMessages = [
 			"head.a.tail:1|c",
@@ -62,14 +72,17 @@ component
 
 	public void function testSampleMethods() {
 
-		// NOTE: This is the sub-classed version that captures the messages instead
-		// of sending them over UDP.
-		var gateway = new testables.StatsDGateway()
+		// Since we want to test the through-put, we are going to manually construct a client
+		// that uses a buffered transport rather than a UDP transport.
+		var transport = new lib.transport.BufferedTransport();
+		var randomNumberGenerator = new lib.util.RandomNumberGenerator();
+		
+		var client = new lib.client.StatsDClient( transport, randomNumberGenerator )
 			.setPrefix( "head." )
 			.setSuffix( ".tail" )
 		;
 
-		gateway
+		client
 			.count( "a", 1, 0.5 )
 			.count( "a", 1, 0.5 )
 			.count( "a", 1, 0.5 )
@@ -159,7 +172,7 @@ component
 			.unique( "h", "this", 0.5 )
 		;
 
-		var sentMessages = gateway.getSentMessages();
+		var sentMessages = transport.getSentMessages();
 
 		// Since sampling won't sent every message, we are going to assert that less than 
 		// 100% of the incoming metrics were sent to the UDP server.

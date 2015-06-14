@@ -25,8 +25,10 @@ component
 
 		// Cache an instance of our StatsDGateway. This is the same host and port that
 		// our node.js server is going to be bound to.
-		application.statsdGateway = new lib.StatsDGateway( "127.0.0.1", 8125 );
-		application.statsdGateway.setPrefix( "demo." );
+		application.statsdClient = new lib.StatsDGateway()
+			.createClient( "127.0.0.1", 8125 )
+			.setPrefix( "demo." )
+		;
 
 		// Return true so the application can load.
 		return( true );

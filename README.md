@@ -3,14 +3,33 @@
 
 by [Ben Nadel][1] (on [Google+][2])
 
-This is a small ColdFusion gateway to facilitate the sending of metrics to a statsD
-server.
+This is a small ColdFusion module to facilitate the sending of metrics to a statsD 
+server. In order to create the statsD client, you can either use the StatsDGateway.cfc
+to compose the default client:
 
-## Constructor
+```cfm
+// Creates the default client using the UDP transport.
+var client = new lib.StatsDGateway().createClient();
+```
 
-* init( [ host = "localhost" [ , port = 8125 [ , prefix = "" [ , suffix = "" ]]]] )
+Or, you can create and inject the components manually:
+
+```cfm
+// Create the composable components first.
+var transport = new lib.transport.UDPTransport();
+var randomNumberGenerator = new lib.util.RandomNumberGenerator();
+
+// Then, manually create and inject dependencies.
+var client = new lib.client.StatsDClient( transport, randomNumberGenerator );
+```
+
+Building the client manually can be helpful if you need to create a new type of 
+transport, such as an HTTP-based transport, or need to add logging.
 
 ## Metrics
+
+Once you have a reference to the statsD client instance, you can use the following 
+methods to send metrics to the statsD server.
 
 ### Count
 
