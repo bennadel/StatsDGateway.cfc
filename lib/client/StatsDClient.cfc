@@ -440,7 +440,7 @@ component
 	*/
 	private string function formatRate( required numeric rate ) {
 
-		return( numberFormat( rate, "0.000" ) );
+		return( numberFormat( rate, "0.00" ) );
 
 	}
 

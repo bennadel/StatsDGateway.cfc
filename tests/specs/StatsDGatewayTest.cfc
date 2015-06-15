@@ -179,14 +179,14 @@ component
 		assert( arrayLen( sentMessages ) < 80 );
 
 		var expectedMessages = [
-			"head.a.tail:1|c|@0.500",
-			"head.b.tail:2|c|@0.500",
-			"head.c.tail:-3|c|@0.500",
-			"head.d.tail:4|g|@0.500",
-			"head.e.tail:+5|g|@0.500",
-			"head.f.tail:-6|g|@0.500",
-			"head.g.tail:7|ms|@0.500",
-			"head.h.tail:this|s|@0.500"
+			"head.a.tail:1|c|@0.50",
+			"head.b.tail:2|c|@0.50",
+			"head.c.tail:-3|c|@0.50",
+			"head.d.tail:4|g|@0.50",
+			"head.e.tail:+5|g|@0.50",
+			"head.f.tail:-6|g|@0.50",
+			"head.g.tail:7|ms|@0.50",
+			"head.h.tail:this|s|@0.50"
 		];
 
 		// Since sampling doesn't send every metric, it's hard for us to say *exactly* what
