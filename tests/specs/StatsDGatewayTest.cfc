@@ -16,9 +16,9 @@ component
 		// Since we want to test the through-put, we are going to manually construct a client
 		// that uses a buffered transport rather than a UDP transport.
 		var transport = new lib.transport.CaptureTransport();
-		var randomNumberGenerator = new lib.util.RandomNumberGenerator();
+		var sampler = new lib.sampler.RandomSampler();
 		
-		var client = new lib.client.StatsDClient( transport, randomNumberGenerator )
+		var client = new lib.client.StatsDClient( transport, sampler )
 			.setPrefix( "head." )
 			.setSuffix( ".tail" )
 		;
@@ -75,9 +75,9 @@ component
 		// Since we want to test the through-put, we are going to manually construct a client
 		// that uses a buffered transport rather than a UDP transport.
 		var transport = new lib.transport.CaptureTransport();
-		var randomNumberGenerator = new lib.util.RandomNumberGenerator();
+		var sampler = new lib.sampler.RandomSampler();
 		
-		var client = new lib.client.StatsDClient( transport, randomNumberGenerator )
+		var client = new lib.client.StatsDClient( transport, sampler )
 			.setPrefix( "head." )
 			.setSuffix( ".tail" )
 		;

@@ -7,21 +7,21 @@ component
 	* I initialize the statsD client to send messages over the given transport.
 	* 
 	* @transport I am the communications transport implementation.
-	* @randomNumberGenreator I am a random number generator.
+	* @sampler I am a sampling strategy for omitting metrics.
 	* @prefix I am the prefix to prepend to all metric keys.
 	* @suffix I am the suffix to append to all metric keys.
 	* @output false
 	*/
 	public any function init(
 		required any transport,
-		required any randomNumberGenerator,
+		required any sampler,
 		string prefix = "",
 		string suffix = ""
 		) {
 
 		// Store private variables.
 		setTransport( transport );
-		setRandomNumberGenerator( randomNumberGenerator );
+		setSampler( sampler );
 		setPrefix( prefix );
 		setSuffix( suffix );
 
@@ -181,15 +181,15 @@ component
 
 
 	/**
-	* I set the random number generator to be used when determining if a metric should
-	* be sent based on the provided sampling rate. Returns [this].
+	* I set the sampler that will help determine if metrics should be omitted based on 
+	* sample rate. Returns [this].
 	* 
-	* @newRandomNumberGenerator I am the new random number generator.
+	* @newSampler I am the new sampler.
 	* @output false
 	*/
-	public any function setRandomNumberGenerator( required any newRandomNumberGenerator ) {
+	public any function setSampler( required any newSampler ) {
 
-		randomNumberGenerator = newRandomNumberGenerator;
+		sampler = newSampler;
 
 		return( this );
 
@@ -461,7 +461,7 @@ component
 		required numeric rate
 		) {
 
-		if ( shouldSkipBasedOnSampleRate( rate, type, key ) ) {
+		if ( sampler.shouldSkip( rate, type, key ) ) {
 
 			return( this );
 
@@ -478,34 +478,6 @@ component
 		transport.sendMessage( message );
 
 		return( this );
-
-	}
-
-
-	/**
-	* I determine if the given key should be skipped due to the given sample rate.
-	* 
-	* NOTE: We are passing-in more values than are needed so that we can change the 
-	* algorithm later on, especially if the component is sub-classed and this method 
-	* needs to be overridden. 
-	* 
-	* @rate I am the sample rate for the given key.
-	* @metric I am the statsD metric type being sampled.
-	* @key I am the statsD metric key being sampled.
-	*/
-	private boolean function shouldSkipBasedOnSampleRate(
-		required numeric rate,
-		required string metric,
-		required string key
-		) {
-
-		if ( rate == 1 ) {
-
-			return( false );
-
-		}
-
-		return( randomNumberGenerator.nextFloat() <= rate );
 
 	}
 

@@ -39,7 +39,7 @@ component
 
 		var client = new client.StatsDClient(
 			new transport.UDPTransport( host, port ),
-			new util.RandomNumberGenerator(),
+			new sampler.RandomSampler(),
 			prefix,
 			suffix
 		);

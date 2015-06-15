@@ -5,6 +5,7 @@ component
 
 	/**
 	* I create a transportation mechanism for sending messages to an internal buffer.
+	* These messages can then be retrieved and checked (helpful for testing).
 	* 
 	* @output false
 	*/
