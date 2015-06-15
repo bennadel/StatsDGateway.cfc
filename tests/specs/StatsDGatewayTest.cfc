@@ -15,7 +15,7 @@ component
 
 		// Since we want to test the through-put, we are going to manually construct a client
 		// that uses a buffered transport rather than a UDP transport.
-		var transport = new lib.transport.BufferedTransport();
+		var transport = new lib.transport.CaptureTransport();
 		var randomNumberGenerator = new lib.util.RandomNumberGenerator();
 		
 		var client = new lib.client.StatsDClient( transport, randomNumberGenerator )
@@ -70,11 +70,11 @@ component
 	}
 
 
-	public void function testSampleMethods() {
+	public void function test_that_sampling_method_calls_work() {
 
 		// Since we want to test the through-put, we are going to manually construct a client
 		// that uses a buffered transport rather than a UDP transport.
-		var transport = new lib.transport.BufferedTransport();
+		var transport = new lib.transport.CaptureTransport();
 		var randomNumberGenerator = new lib.util.RandomNumberGenerator();
 		
 		var client = new lib.client.StatsDClient( transport, randomNumberGenerator )

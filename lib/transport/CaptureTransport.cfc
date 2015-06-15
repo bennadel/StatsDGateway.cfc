@@ -1,6 +1,6 @@
 component
 	output = false
-	hint = "I store the messages in an internal buffer, rather than sending them to a target server."
+	hint = "I capture the outgoing messages in an internal buffer, rather than sending them to a target server."
 	{
 
 	/**
