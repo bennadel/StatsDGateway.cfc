@@ -12,16 +12,20 @@ to compose the default client:
 var client = new lib.StatsDGateway().createClient();
 ```
 
+* StatsDGateway.createClient( [ host = "localhost" [ , port = 8125 [ , prefix [ , suffix ]]]] );
+
 Or, you can create and inject the components manually:
 
 ```cfm
 // Create the composable components first.
 var transport = new lib.transport.UDPTransport();
-var randomNumberGenerator = new lib.util.RandomNumberGenerator();
+var sampler = new lib.sampler.RandomSampler();
 
 // Then, manually create and inject dependencies.
-var client = new lib.client.StatsDClient( transport, randomNumberGenerator );
+var client = new lib.client.StatsDClient( transport, sampler );
 ```
+
+* StatsDClient.init( transport, sampler [ , prefix [ , suffix ]] )
 
 Building the client manually can be helpful if you need to create a new type of 
 transport, such as an HTTP-based transport, or need to add logging.
