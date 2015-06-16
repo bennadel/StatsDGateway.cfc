@@ -10,9 +10,13 @@ to compose the default client:
 ```cfm
 // Creates the default client using the UDP transport.
 var client = new lib.StatsDGateway().createClient();
+
+// Creates a client with persistent UDP socket.
+var client = new lib.StatsDGateway().createPersistentClient();
 ```
 
-* StatsDGateway.createClient( [ host = "localhost" [ , port = 8125 [ , prefix [ , suffix ]]]] );
+* StatsDGateway.createClient( host = "localhost", port = 8125, prefix = "", suffix = "" );
+* StatsDGateway.createPersistentClient( host = "localhost", port = 8125, prefix = "", suffix = "" );
 
 Or, you can create and inject the components manually:
 
@@ -25,7 +29,7 @@ var sampler = new lib.sampler.RandomSampler();
 var client = new lib.client.StatsDClient( transport, sampler );
 ```
 
-* StatsDClient.init( transport, sampler [ , prefix [ , suffix ]] )
+* StatsDClient.init( transport, sampler, prefix = "", suffix = "" )
 
 Building the client manually can be helpful if you need to create a new type of 
 transport, such as an HTTP-based transport, or need to add logging.
@@ -37,23 +41,23 @@ methods to send metrics to the statsD server.
 
 ### Count
 
-* count( key, delta [ , rate = 1 ] )
-* decrement( key [ , delta = 1 [ , rate = 1 ]] )
-* increment( key [ , delta = 1 [ , rate = 1 ]] )
+* count( key, delta, rate = 1 )
+* decrement( key, delta = 1, rate = 1 )
+* increment( key, delta = 1, rate = 1 )
 
 ### Gauge
 
-* decrementGauge( key, delta [ , rate = 1 ] )
-* gauge( key, value [ , rate = 1 ] )
-* incrementGauge( key, delta [ , rate = 1 ] )
+* decrementGauge( key, delta, rate = 1 )
+* gauge( key, value, rate = 1 )
+* incrementGauge( key, delta, rate = 1 )
 
 ### Timing
 
-* timing( key, duration [ , rate = 1 ] )
+* timing( key, duration, rate = 1 )
 
 ### Unique Sets
 
-* unique( group, member [ , rate = 1 ] )
+* unique( group, member, rate = 1 )
 
 
 [1]: http://www.bennadel.com
