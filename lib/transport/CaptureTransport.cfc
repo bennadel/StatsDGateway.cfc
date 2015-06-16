@@ -24,6 +24,19 @@ component
 
 
 	/**
+	* I destroy the transport, cleaning up any data that needs to be cleaned up. Subsequent
+	* calls to .destroy() are ignored.
+	* 
+	* @output false
+	*/
+	public void function destroy() {
+
+		sentMessages = "";
+
+	}
+
+
+	/**
 	* I return the collection of sent messages.
 	* 
 	* @output false
@@ -31,6 +44,18 @@ component
 	public array function getSentMessages() {
 
 		return( sentMessages );
+
+	}
+
+
+	/**
+	* I determine if the transport has been destroyed.
+	* 
+	* @output false
+	*/
+	public boolean function isDestroyed() {
+
+		return( isSimpleValue( sentMessages ) );
 
 	}
 

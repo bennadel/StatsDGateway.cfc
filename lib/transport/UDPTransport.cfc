@@ -30,6 +30,33 @@ component
 
 
 	/**
+	* I destroy the transport, cleaning up any data that needs to be cleaned up. Subsequent
+	* calls to .destroy() are ignored.
+	* 
+	* @output false
+	*/
+	public void function destroy() {
+
+		host = "";
+		hostInetAddress = "";
+		port = "";
+
+	}
+
+
+	/**
+	* I determine if the transport has been destroyed. If so, no more messages can be sent.
+	* 
+	* @output false
+	*/
+	public boolean function isDestroyed() {
+
+		return( host == "" );
+
+	}
+
+
+	/**
 	* I send the given message over a UDP socket to the target server. Returns [this].
 	* 
 	* @message I am the message being sent.

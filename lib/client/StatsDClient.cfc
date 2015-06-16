@@ -100,6 +100,24 @@ component
 
 
 	/**
+	* I destroy the statsD client, cleaning up any data that needs to be cleaned up.
+	* After the client is destroyed, no more messages can be sent. Subsequent calls to
+	* .destroy() are ignored.
+	* 
+	* @output false
+	*/
+	public void function destroy() {
+
+		transport.destroy();
+		sampler.destroy();
+
+		transport = "";
+		sampler = "";
+
+	}
+
+
+	/**
 	* I send a gauge metric to the statsD server. Returns [this] for method chaining.
 	* 
 	* @key I am the key being gauged.
@@ -159,6 +177,18 @@ component
 		testRate( rate );
 
 		return( sendMetric( "g", key, "+#delta#", rate ) );
+
+	}
+
+
+	/**
+	* I determine if the client has been destroyed.
+	* 
+	* @output false
+	*/
+	public boolean function isDestroyed() {
+
+		return( isSimpleValue( transport ) );
 
 	}
 
