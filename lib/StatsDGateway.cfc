@@ -28,51 +28,38 @@ component
 	* @port I am the port that the statsD server is listening on (defaults to common statsD port).
 	* @prefix I am the prefix to prepend to all metric keys.
 	* @suffix I am the suffix to append to all metric keys.
+	* @persistent I indicate the UDP socket should be persisted (required .destroy() to be called when done).
+	* @maxLength I indicate that messages should be buffered (to the given length) before being sent.
 	* @output false
 	*/
 	public any function createClient(
 		string host = "localhost",
 		numeric port = 8125,
 		string prefix = "",
-		string suffix = ""
+		string suffix = "",
+		boolean persistent = false,
+		numeric maxLength = 0
 		) {
 
-		var client = new client.StatsDClient(
-			new transport.UDPTransport( host, port ),
-			new sampler.RandomSampler(),
-			prefix,
-			suffix
-		);
+		if ( persistent ) {
 
-		return( client );
+			var transport = new transport.PersistentUDPTransport( host, port );
 
-	}
+		} else {
 
+			var transport = new transport.UDPTransport( host, port );
 
-	/**
-	* I create a client that communicates with the statsD server over UDP. The underlying
-	* UDP socket is persisted until the .destroy() method is called. This makes the client
-	* a bit more efficient; but, it puts the burden of maintenance on the consumer.
-	* 
-	* @host I am the statsD host address (defaults to localhost).
-	* @port I am the port that the statsD server is listening on (defaults to common statsD port).
-	* @prefix I am the prefix to prepend to all metric keys.
-	* @suffix I am the suffix to append to all metric keys.
-	* @output false
-	*/
-	public any function createPersistentClient(
-		string host = "localhost",
-		numeric port = 8125,
-		string prefix = "",
-		string suffix = ""
-		) {
+		}
 
-		var client = new client.StatsDClient(
-			new transport.PersistentUDPTransport( host, port ),
-			new sampler.RandomSampler(),
-			prefix,
-			suffix
-		);
+		if ( maxLength ) {
+
+			transport = new transport.BufferedTransport( transport, maxLength );
+
+		}
+
+		var sampler = new sampler.RandomSampler();
+
+		var client = new client.StatsDClient( transport, sampler, prefix, suffix );
 
 		return( client );
 

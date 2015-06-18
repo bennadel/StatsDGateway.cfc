@@ -7,20 +7,22 @@ This is a small ColdFusion module to facilitate the sending of metrics to a stat
 server. In order to create the statsD client, you can either use the StatsDGateway.cfc
 to compose the default client:
 
-```cfm
+```cfc
 // Creates the default client using the UDP transport.
 var client = new lib.StatsDGateway().createClient();
 
 // Creates a client with persistent UDP socket.
-var client = new lib.StatsDGateway().createPersistentClient();
+var client = new lib.StatsDGateway().createClient( persistent = true );
+
+// Creates a client with message buffering.
+var client = new lib.StatsDGateway().createClient( maxLength = 1000 );
 ```
 
-* StatsDGateway.createClient( host = "localhost", port = 8125, prefix = "", suffix = "" );
-* StatsDGateway.createPersistentClient( host = "localhost", port = 8125, prefix = "", suffix = "" );
+* StatsDGateway.createClient( host = "localhost", port = 8125, prefix = "", suffix = "", persistent = false, maxLength = 0 );
 
 Or, you can create and inject the components manually:
 
-```cfm
+```cfc
 // Create the composable components first.
 var transport = new lib.transport.UDPTransport();
 var sampler = new lib.sampler.RandomSampler();
