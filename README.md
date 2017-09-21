@@ -3,6 +3,8 @@
 
 by [Ben Nadel][1] (on [Google+][2])
 
+**VERSION**: 1.0.0
+
 This is a small ColdFusion module to facilitate the sending of metrics to a statsD 
 server. In order to create the statsD client, you can either use the StatsDGateway.cfc
 to compose the default client:
@@ -60,6 +62,15 @@ methods to send metrics to the statsD server.
 ### Unique Sets
 
 * unique( group, member, rate = 1 )
+
+
+----
+
+## Change Log
+
+### Version 1.0.0
+
+Initial release of basic StatsDClient.
 
 
 [1]: http://www.bennadel.com
