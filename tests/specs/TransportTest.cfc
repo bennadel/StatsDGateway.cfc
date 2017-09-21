@@ -189,4 +189,43 @@ component
 
 	}
 
+
+	public void function test_that_messages_can_be_sent_over_standard_out_transport() {
+
+		var transport = new lib.transport.StandardOutTransport();
+
+		transport.sendMessage( "this should work" );
+		transport.destroy();
+
+		var transport = new lib.transport.StandardOutTransport( "metric" );
+
+		transport.sendMessage( "this ""should"" work" );
+		transport.destroy();
+
+	}
+
+
+	public void function test_that_messages_cannot_be_sent_over_destroyed_standard_out_transport() {
+
+		var transport = new lib.transport.StandardOutTransport();
+
+		transport.destroy();
+
+		assert( transport.isDestroyed() );
+
+		try {
+
+			transport.sendMessage( "this should fail" );
+			
+		} catch ( any error ) {
+
+			return;
+
+		}
+
+		// If we made it this far, something went wrong.
+		assert( false );
+
+	}
+
 }

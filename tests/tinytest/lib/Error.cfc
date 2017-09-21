@@ -150,7 +150,7 @@ component
 						fileName = getFileFromPath( tagContext.template ),
 						filePath = tagContext.template,
 						lineNumber = tagContext.line,
-						methodName = getMethodNameFromContext( tagContext.raw_trace, tagContext.template )
+						methodName = ( structKeyExists( tagContext, "raw_trace" ) ? getMethodNameFromContext( tagContext.raw_trace, tagContext.template ) : "" )
 					}
 				);
 				

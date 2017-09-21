@@ -6,27 +6,36 @@ component
 
 	public void function test_that_create_client_factory_works() {
 
-		var client = new lib.StatsDGateway().createClient();
+		var gateway = new lib.StatsDGateway();
+		var defaultClient = gateway.createClient();
+		var dogStatsClient = gateway.createDogStatsClient();
 
-		client.destroy();
+		defaultClient.destroy();
+		dogStatsClient.destroy();
 
 	}
 
 
 	public void function test_that_create_persisent_client_factory_works() {
 
-		var client = new lib.StatsDGateway().createClient( persistent = true );
+		var gateway = new lib.StatsDGateway();
+		var defaultClient = gateway.createClient( persistent = true );
+		var dogStatsClient = gateway.createDogStatsClient( persistent = true );
 
-		client.destroy();
+		defaultClient.destroy();
+		dogStatsClient.destroy();
 
 	}
 
 
 	public void function test_that_create_buffered_client_factory_works() {
 
-		var client = new lib.StatsDGateway().createClient( maxLength = 10 );
+		var gateway = new lib.StatsDGateway();
+		var defaultClient = gateway.createClient( maxLength = 10 );
+		var dogStatsClient = gateway.createDogStatsClient( maxLength = 10 );
 
-		client.destroy();
+		defaultClient.destroy();
+		dogStatsClient.destroy();
 
 	}
 
