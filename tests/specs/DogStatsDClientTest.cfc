@@ -258,7 +258,7 @@ component
 			priority = "low",
 			sourceTypeName = "stnvalue",
 			alertType = "info",
-			tags = [ "tk:v,tk" ]
+			tags = [ "tk:v", "tk" ]
 		);
 
 		var sentMessages = transport.getSentMessages();
@@ -267,6 +267,38 @@ component
 			"_e{5,6}:hello|world!|d:12345|##first:a,first-b",
 			"_e{5,20}:hello|brave\\nnew\\nworld!|d:12345|##first:a,first-b",
 			"_e{5,6}:hello|world!|d:12345|h:hvalue|k:akvalue|p:low|s:stnvalue|t:info|##first:a,first-b,tk:v,tk"
+		];
+
+		assert( serializeJson( sentMessages ) == serializeJson( expectedMessages ) );
+
+	}
+
+
+	public void function test_that_service_checks_work() {
+
+		// Since we want to test the through-put, we are going to manually construct a client
+		// that uses a capturing transport rather than a UDP transport.
+		var transport = new lib.transport.CaptureTransport();
+		var sampler = new lib.sampler.RandomSampler();
+		var client = new lib.client.DogStatsDClient( transport, sampler )
+			.setTags( [ "first:a", "first-b" ] )
+		;
+
+		client.serviceCheck( "database", client.STATUS.WARNING, 12345 );
+		client.serviceCheck(
+			name = "database",
+			status = client.STATUS.OK,
+			timestamp = 12345,
+			hostname = "hv",
+			tags = [ "tk:v", "tk" ],
+			message = "This can't be good."
+		);
+		
+		var sentMessages = transport.getSentMessages();
+
+		var expectedMessages = [
+			"_sc|database|1|d:12345|##first:a,first-b",
+			"_sc|database|0|d:12345|h:hv|##first:a,first-b,tk:v,tk|m:This can't be good."
 		];
 
 		assert( serializeJson( sentMessages ) == serializeJson( expectedMessages ) );

@@ -15,6 +15,13 @@ component
 		LOW: "low"
 	};
 
+	this.STATUS = {
+		OK: "ok",
+		WARNING: "warning",
+		CRITICAL: "critical",
+		UNKNOWN: "unknown"
+	};
+
 	variables.NEWLINE_PATTERN = "\r\n?|\n";
 
 
@@ -505,6 +512,89 @@ component
 
 
 	/**
+	* I send a service check to DataDogHQ.
+	*
+	* @name I am the name of the service whose status being reported.
+	* @status I am the status of the given service (ok, warning, critical, or unknown).
+	* @timestamp I am the UTC ** SECONDS ** of the service check (default is now).
+	* @hostname I am the hostname of the service check.
+	* @tags I am the collection of tags associated with the service check.
+	* @message I am a message to associate with the service check.
+	* @output false
+	*/
+	public any function serviceCheck(
+		required string name,
+		required string status,
+		numeric timestamp = 0,
+		string hostname = "",
+		array tags = [],
+		string message = ""
+		) {
+
+		testServiceCheckName( name );
+		testServiceCheckStatus( status );
+		testServiceCheckTimestamp( timestamp );
+		testServiceCheckHostname( hostname );
+		testTags( tags );
+		testServiceCheckMessage( message );
+
+		var statusTranslation = {
+			OK: "0",
+			WARNING: "1",
+			CRITICAL: "2",
+			UNKNOWN: "3"
+		};
+
+		var normalizedMessage = reReplace( message, NEWLINE_PATTERN, "\\n", "all" );
+
+		var segments = [
+			"_sc",
+			name,
+			statusTranslation[ status ]
+		];
+
+		// If no timestamp is provided, let's create one so that our service check timing
+		// is accurate, regardless of when the message is actually flushed to the server.
+		if ( timestamp ) {
+
+			arrayAppend( segments, "d:#fix( timestamp )#" );
+
+		} else {
+
+			arrayAppend( segments, "d:#fix( getTickCount() / 1000 )#" );
+
+		}
+
+		if ( len( hostname ) ) {
+
+			arrayAppend( segments, "h:#hostname#" );
+
+		}
+
+		if ( arrayLen( baseTags ) && arrayLen( tags ) ) {
+
+			arrayAppend( segments, ( "##" & listAppend( arrayToList( baseTags ), arrayToList( tags ) ) ) );
+
+		} else if ( arrayLen( baseTags ) || arrayLen( tags ) ) {
+
+			arrayAppend( segments, ( "##" & arrayToList( baseTags ) & arrayToList( tags ) ) );
+
+		}
+
+		if ( len( normalizedMessage ) ) {
+
+			arrayAppend( segments, "m:#normalizedMessage#" );
+
+		}
+
+		transport.sendMessage( arrayToList( segments, "|" ) );
+
+		return( this );
+
+	}
+
+
+	/**
 	* I set the prefix to be perpended to all metric keys. Returns [this].
 	* 
 	* @newPrefix I am the new prefix being set.
@@ -907,6 +997,178 @@ component
 
 
 	/**
+	* I test the given DogStatsD service check hostname. If the value is invalid, I throw
+	* an error; otherwise, I just return quietly.
+	* 
+	* @newKey I am the new service check hostname being tested.
+	* @output false
+	*/
+	public void function testServiceCheckHostname( required string newHostname ) {
+
+		if ( newHostname != trim( newHostname ) ) {
+
+			throw(
+				type = "DogStatsDClient.InvalidServiceCheckHostname",
+				message = "Service check hostname is invalid.",
+				detail = "The service check hostname [#newHostname#] cannot contain leading or trailing whitespace."
+			);
+
+		}
+
+		if ( reFind( NEWLINE_PATTERN, newHostname ) ) {
+
+			throw(
+				type = "DogStatsDClient.InvalidServiceCheckHostname",
+				message = "Service check hostname is invalid.",
+				detail = "The service check hostname [#newHostname#] cannot contain line breaks."
+			);
+
+		}
+
+		if ( reFind( "[|:]", newHostname ) ) {
+
+			throw(
+				type = "DogStatsDClient.InvalidServiceCheckHostname",
+				message = "Service check hostname is invalid.",
+				detail = "The service check hostname [#newHostname#] cannot contain the reserved characters: '|' or ':'."
+			);
+
+		}
+
+	}
+
+
+	/**
+	* I test the given DogStatsD service check message. If the value is invalid, I throw
+	* an error; otherwise, I just return quietly.
+	* 
+	* @newKey I am the new service check message being tested.
+	* @output false
+	*/
+	public void function testServiceCheckMessage( required string newMessage ) {
+
+		if ( newMessage != trim( newMessage ) ) {
+
+			throw(
+				type = "DogStatsDClient.InvalidServiceCheckMessage",
+				message = "Service check message is invalid.",
+				detail = "The service check message [#newMessage#] cannot contain leading or trailing whitespace."
+			);
+
+		}
+
+		if ( reFind( NEWLINE_PATTERN, newMessage ) ) {
+
+			throw(
+				type = "DogStatsDClient.InvalidServiceCheckMessage",
+				message = "Service check message is invalid.",
+				detail = "The service check message [#newMessage#] cannot contain line breaks."
+			);
+
+		}
+
+		if ( reFind( "[|:]", newMessage ) ) {
+
+			throw(
+				type = "DogStatsDClient.InvalidServiceCheckMessage",
+				message = "Service check message is invalid.",
+				detail = "The service check message [#newMessage#] cannot contain the reserved characters: '|' or ':'."
+			);
+
+		}
+
+	}
+
+
+	/**
+	* I test the given DogStatsD service check name. If the value is invalid, I throw an
+	* error; otherwise, I just return quietly.
+	* 
+	* @newKey I am the new service check name being tested.
+	* @output false
+	*/
+	public void function testServiceCheckName( required string newName ) {
+
+		if ( ! len( newName ) ) {
+
+			throw(
+				type = "DogStatsDClient.InvalidServiceCheckName",
+				message = "Service check name is invalid.",
+				detail = "The service check name cannot be empty."
+			);
+
+		}
+
+		if ( newName != trim( newName ) ) {
+
+			throw(
+				type = "DogStatsDClient.InvalidServiceCheckName",
+				message = "Service check name is invalid.",
+				detail = "The service check name [#newName#] cannot contain leading or trailing whitespace."
+			);
+
+		}
+
+		if ( reFind( NEWLINE_PATTERN, newName ) ) {
+
+			throw(
+				type = "DogStatsDClient.InvalidServiceCheckName",
+				message = "Service check name is invalid.",
+				detail = "The service check name [#newName#] cannot contain line breaks."
+			);
+
+		}
+
+		if ( reFind( "[|]", newName ) ) {
+
+			throw(
+				type = "DogStatsDClient.InvalidServiceCheckName",
+				message = "Service check name is invalid.",
+				detail = "The service check name [#newName#] cannot contain the reserved characters: '|'."
+			);
+
+		}
+
+	}
+
+
+	/**
+	* I test the given DogStatsD service check status. If the value is invalid, I throw
+	* an error; otherwise, I just return quietly.
+	* 
+	* @newKey I am the new service check status being tested.
+	* @output false
+	*/
+	public void function testServiceCheckStatus( required string newStatus ) {
+
+		if ( ! structKeyExists( this.STATUS, newStatus ) ) {
+
+			throw(
+				type = "DogStatsDClient.InvalidServiceCheckStatus",
+				message = "Service check status is invalid.",
+				detail = "The service check status [#newStatus#] must be one of the following: 'ok', 'warning', 'critical', or 'unknown'."
+			);
+
+		}
+
+	}
+
+
+	/**
+	* I test the given DogStatsD service check timestamp. If the value is invalid, I
+	* throw an error; otherwise, I just return quietly.
+	* 
+	* @newKey I am the new service check timestamp being tested.
+	* @output false
+	*/
+	public void function testServiceCheckTimestamp( required numeric newTimestamp ) {
+
+		// ... not sure if there is anything to validate here?
+
+	}
+
+
+	/**
 	* I test the key suffix. If the value is invalid, I throw an error; otherwise, I just
 	* return quietly.
 	* 
@@ -973,6 +1235,16 @@ component
 				type = "DogStatsDClient.InvalidTag",
 				message = "Tag is invalid.",
 				detail = "The tag [#newTag#] cannot contain the reserved keys: 'device:', 'host:', or 'source:'."
+			);
+
+		}
+
+		if ( find( ",", newTag ) ) {
+
+			throw(
+				type = "DogStatsDClient.InvalidTag",
+				message = "Tag is invalid.",
+				detail = "The tag [#newTag#] cannot contain the reserved characters: ','."
 			);
 
 		}

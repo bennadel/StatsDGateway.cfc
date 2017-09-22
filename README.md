@@ -3,7 +3,7 @@
 
 by [Ben Nadel][1] (on [Google+][2])
 
-**VERSION**: 2.0.0
+**VERSION**: 3.0.0
 
 This is a small ColdFusion module to facilitate the sending of metrics to a statsD 
 server. In order to create the statsD client, you can either use the StatsDGateway.cfc
@@ -173,6 +173,11 @@ search and filter events in DataDogHQ:
 ----
 
 ## Change Log
+
+### Version 3.0.0
+
+* __Feature__: Added `.serviceCheck()` method to send service checks to DataDogHQ.
+* __Breaking Change__: Fixed `tag` validation.
 
 ### Version 2.0.0
 
