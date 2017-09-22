@@ -170,6 +170,22 @@ search and filter events in DataDogHQ:
 * alertType - I am the alert level of the event (default is "info").
 * tags - I am the collection of tags associated with the event.
 
+### Service Checks
+
+The DogStatsDClient can also report service health to DataDogHQ using the `.serviceCheck()`
+method:
+
+* name - Required. I am the name of the service whose status being reported.
+* status - Required. I am the status of the given service. Possible values:
+** "ok"
+** "warning"
+** "critical"
+** "unknown"
+* timestamp - I am the UTC secodns of the service check (default is now).
+* hostname - I am the hostname of the service check.
+* tags - I am the collection of tags associated with the service check.
+* message - I am a message to associate with the service check.
+
 ----
 
 ## Change Log
