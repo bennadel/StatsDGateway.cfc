@@ -177,10 +177,10 @@ method:
 
 * name - Required. I am the name of the service whose status being reported.
 * status - Required. I am the status of the given service. Possible values:
-** "ok"
-** "warning"
-** "critical"
-** "unknown"
+* * "ok"
+* * "warning"
+* * "critical"
+* * "unknown"
 * timestamp - I am the UTC secodns of the service check (default is now).
 * hostname - I am the hostname of the service check.
 * tags - I am the collection of tags associated with the service check.
