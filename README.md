@@ -3,7 +3,7 @@
 
 by [Ben Nadel][1] (on [Google+][2])
 
-**VERSION**: 1.1.0
+**VERSION**: 2.0.0
 
 This is a small ColdFusion module to facilitate the sending of metrics to a statsD 
 server. In order to create the statsD client, you can either use the StatsDGateway.cfc
@@ -94,7 +94,7 @@ string values that can been stand-alone values (ex, `value`) or key-value pairs
 client.increment( "incoming-request", [ "route:#path#", "user:#userID#" ] );
 ```
 
-The DogStatsClient provides all of the basic StatsD methods plus `.histogram()`. Many of
+The DogStatsDClient provides all of the basic StatsD methods plus `.histogram()`. Many of
 the methods allow for optional `rate` and `tags` arguments. As such, the method 
 signatures are fairly flexible (with rate defaulting to `1` and tags defaulting to `[]`):
 
@@ -149,22 +149,41 @@ _**NOTE**: DogStatsD does not support sampling on sets. It will be ignored._
 * unique( group, member )
 * unique( group, member, tags )
 
+### Events
+
+The DogStatsDClient can also send arbitrary events to DataDogHQ that can be overlayed on
+anyone of the dashboards. This can be helpful when trying to correlate changes in 
+performance with system events.
+
+* event( title, text, ... )
+
+The `event()` method can take several additional named arguments, which can be used to 
+search and filter events in DataDogHQ:
+
+* title - I am the title of the event.
+* text - I am the text of the event (can be empty, can contain line breaks).
+* timestamp - I am the UTC **SECONDS** of the event (default is now).
+* hostname - I am the hostname of the event.
+* aggregationKey - I am the shared aggregation key of the event (allowing events to be grouped).
+* priority - I am the priority of the event (default is "normal").
+* sourceTypeName - I am the source type of the event.
+* alertType - I am the alert level of the event (default is "info").
+* tags - I am the collection of tags associated with the event.
+
 ----
 
 ## Change Log
+
+### Version 2.0.0
+
+* __Feature__: Added `.event()` method to send events to DataDogHQ.
+* __Breaking Change__: Fixed `key` validation for metrics.
+* __Breaking Change__: Fixed `tag` validation for metrics.
+* __Breaking Change__: Normalized some of the error message and details.
 
 ### Version 1.1.0
 
-Added DataDog's DogStatsD extension for StatsD.
-
-### Version 1.0.0
-
-Initial release of basic StatsDClient.
-
-
-----
-
-## Change Log
+* __Feature__: Added DataDog's DogStatsD extension for StatsD metrics.
 
 ### Version 1.0.0
 

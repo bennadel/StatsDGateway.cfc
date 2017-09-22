@@ -3,6 +3,21 @@ component
 	hint = "I am a specialized statsD client for DataDog (DogStatsD)."
 	{
 
+	this.ALERT_TYPE = {
+		ERROR: "error",
+		WARNING: "warning",
+		INFO: "info",
+		SUCCESS: "success"
+	};
+
+	this.PRIORITY = {
+		NORMAL: "normal",
+		LOW: "low"
+	};
+
+	variables.NEWLINE_PATTERN = "\r\n?|\n";
+
+
 	/**
 	* I initialize the DogStatsD client to send messages over the given transport. The
 	* DogStatsD client is a specialized StatsD client that adds support for histograms,
@@ -204,6 +219,106 @@ component
 
 
 	/**
+	* I send an event to DataDogHQ.
+	*
+	* @title I am the title of the event.
+	* @text I am the text of the event (can be empty, can contain line breaks).
+	* @timestamp I am the UTC ** SECONDS ** of the event (default is now).
+	* @hostname I am the hostname of the event.
+	* @aggregationKey I am the shared aggregation key of the event (allowing events to be grouped).
+	* @priority I am the priority of the event (default is "normal").
+	* @sourceTypeName I am the source type of the event.
+	* @alertType I am the alert level of the event (default is "info").
+	* @tags I am the collection of tags associated with the event.
+	* @output false
+	*/
+	public any function event(
+		required string title,
+		required string text,
+		numeric timestamp = 0,
+		string hostname = "",
+		string aggregationKey = "",
+		string priority = "",
+		string sourceTypeName = "",
+		string alertType = "",
+		array tags = []
+		) {
+
+		testEventTitle( title );
+		testEventText( text );
+		testEventTimestamp( timestamp );
+		testEventHostname( hostname );
+		testEventPriority( priority );
+		testEventSourceTypeName( sourceTypeName );
+		testEventAlertType( alertType );
+		testTags( tags );
+
+		var normalizedText = reReplace( trim( text ), NEWLINE_PATTERN, "\\n", "all" );
+
+		var segments = [
+			"_e{#len( title )#,#len( normalizedText )#}:#title#|#normalizedText#"	
+		];
+
+		// If no timestamp is provided, let's create one so that our event timing is
+		// accurate, regardless of when the message is actually flushed to the server.
+		if ( timestamp ) {
+
+			arrayAppend( segments, "d:#fix( timestamp )#" );
+
+		} else {
+
+			arrayAppend( segments, "d:#fix( getTickCount() / 1000 )#" );
+
+		}
+
+		if ( len( hostname ) ) {
+
+			arrayAppend( segments, "h:#hostname#" );
+
+		}
+
+		if ( len( aggregationKey ) ) {
+
+			arrayAppend( segments, "k:#aggregationKey#" );
+
+		}
+
+		if ( len( priority ) ) {
+
+			arrayAppend( segments, "p:#priority#" );
+
+		}
+
+		if ( len( sourceTypeName ) ) {
+
+			arrayAppend( segments, "s:#sourceTypeName#" );
+
+		}
+
+		if ( len( alertType ) ) {
+
+			arrayAppend( segments, "t:#alertType#" );
+
+		}
+
+		if ( arrayLen( baseTags ) && arrayLen( tags ) ) {
+
+			arrayAppend( segments, ( "##" & listAppend( arrayToList( baseTags ), arrayToList( tags ) ) ) );
+
+		} else if ( arrayLen( baseTags ) || arrayLen( tags ) ) {
+
+			arrayAppend( segments, ( "##" & arrayToList( baseTags ) & arrayToList( tags ) ) );
+
+		}
+
+		transport.sendMessage( arrayToList( segments, "|" ) );
+
+		return( this );
+
+	}
+
+
+	/**
 	* I send a gauge metric to the statsD server. Returns [this] for method chaining.
 	* 
 	* Accepts multiple signatures:
@@ -264,7 +379,7 @@ component
 			tags: []
 		};
 
-		var length = arrayLen( arguments );
+		var length = arrayLen( arguments );	
 
 		// SIGNATURE: histogram( key, value, rate )
 		if ( ( length == 3 ) && isNumeric( arguments[ 3 ] ) ) {
@@ -486,6 +601,206 @@ component
 
 
 	/**
+	* I test the given DogStatsD event alert type. If the value is invalid, I throw an
+	* error; otherwise, I just return quietly.
+	* 
+	* @newKey I am the new event alert type being tested.
+	* @output false
+	*/
+	public void function testEventAlertType( required string newAlertType ) {
+
+		if ( len( newAlertType ) && ! structKeyExists( this.ALERT_TYPE, newAlertType ) ) {
+
+			throw(
+				type = "DogStatsDClient.InvalidEventAlertType",
+				message = "Event alert type is invalid.",
+				detail = "The event alert type [#newAlertType#] must be one of the following: 'error', 'warning', 'info', or 'success'."
+			);
+
+		}
+
+	}
+
+
+	/**
+	* I test the given DogStatsD event hostname. If the value is invalid, I throw an
+	* error; otherwise, I just return quietly.
+	* 
+	* @newKey I am the new event hostname being tested.
+	* @output false
+	*/
+	public void function testEventHostname( required string newHostname ) {
+
+		if ( newHostname != trim( newHostname ) ) {
+
+			throw(
+				type = "DogStatsDClient.InvalidEventHostname",
+				message = "Event hostname is invalid.",
+				detail = "The event hostname [#newHostname#] cannot contain leading or trailing whitespace."
+			);
+
+		}
+
+		if ( reFind( NEWLINE_PATTERN, newHostname ) ) {
+
+			throw(
+				type = "DogStatsDClient.InvalidEventHostname",
+				message = "Event hostname is invalid.",
+				detail = "The event hostname [#newHostname#] cannot contain line breaks."
+			);
+
+		}
+
+		if ( reFind( "[|:]", newHostname ) ) {
+
+			throw(
+				type = "DogStatsDClient.InvalidEventHostname",
+				message = "Event hostname is invalid.",
+				detail = "The event hostname [#newHostname#] cannot contain the reserved characters: '|' or ':'."
+			);
+
+		}
+
+	}
+
+
+	/**
+	* I test the given DogStatsD event priority. If the value is invalid, I throw an
+	* error; otherwise, I just return quietly.
+	* 
+	* @newKey I am the new event priority being tested.
+	* @output false
+	*/
+	public void function testEventPriority( required string newPriority ) {
+
+		if ( len( newPriority ) && ! structKeyExists( this.PRIORITY, newPriority ) ) {
+
+			throw(
+				type = "DogStatsDClient.InvalidEventPriority",
+				message = "Event priority is invalid.",
+				detail = "The event priority [#newPriority#] must be one of the following: 'low' or 'normal'."
+			);
+
+		}
+
+	}
+
+
+	/**
+	* I test the given DogStatsD event source type name. If the value is invalid, I throw
+	* an error; otherwise, I just return quietly.
+	* 
+	* @newKey I am the new event source type name being tested.
+	* @output false
+	*/
+	public void function testEventSourceTypeName( required string newSourceTypeName ) {
+
+		if ( newSourceTypeName != trim( newSourceTypeName ) ) {
+
+			throw(
+				type = "DogStatsDClient.InvalidEventSourceTypeName",
+				message = "Event source type name is invalid.",
+				detail = "The event source type name [#newSourceTypeName#] cannot contain leading or trailing whitespace."
+			);
+
+		}
+
+		if ( reFind( NEWLINE_PATTERN, newSourceTypeName ) ) {
+
+			throw(
+				type = "DogStatsDClient.InvalidEventSourceTypeName",
+				message = "Event source type name is invalid.",
+				detail = "The event source type name [#newSourceTypeName#] cannot contain line breaks."
+			);
+
+		}
+
+		if ( reFind( "[|:]", newSourceTypeName ) ) {
+
+			throw(
+				type = "DogStatsDClient.InvalidEventSourceTypeName",
+				message = "Event source type name is invalid.",
+				detail = "The event source type name [#newSourceTypeName#] cannot contain the reserved characters: '|' or ':'."
+			);
+
+		}
+
+	}
+
+
+	/**
+	* I test the given DogStatsD event text. If the value is invalid, I throw an error;
+	* otherwise, I just return quietly.
+	* 
+	* @newKey I am the new event text being tested.
+	* @output false
+	*/
+	public void function testEventText( required string newText ) {
+
+		// CAUTION: The validation on the event text is very loose because this is not
+		// necessarily a value that is provided by the developer; it may be a value that
+		// is thrown and caught, resulting in a wildly unpredictable format.
+
+	}
+
+
+	/**
+	* I test the given DogStatsD event timestamp. If the value is invalid, I throw an
+	* error; otherwise, I just return quietly.
+	* 
+	* @newKey I am the new event timestamp being tested.
+	* @output false
+	*/
+	public void function testEventTimestamp( required numeric newTimestamp ) {
+
+		// ... not sure if there is anything to validate here?
+
+	}
+
+
+	/**
+	* I test the given DogStatsD event title. If the value is invalid, I throw an error;
+	* otherwise, I just return quietly.
+	* 
+	* @newKey I am the new event title being tested.
+	* @output false
+	*/
+	public void function testEventTitle( required string newTitle ) {
+
+		if ( ! len( newTitle ) ) {
+
+			throw(
+				type = "DogStatsDClient.InvalidEventTitle",
+				message = "Event title is invalid.",
+				detail = "The event title cannot be empty."
+			);
+
+		}
+
+		if ( newTitle != trim( newTitle ) ) {
+
+			throw(
+				type = "DogStatsDClient.InvalidEventTitle",
+				message = "Event title is invalid.",
+				detail = "The event title [#newTitle#] cannot contain leading or trailing whitespace."
+			);
+
+		}
+
+		if ( reFind( NEWLINE_PATTERN, newTitle ) ) {
+
+			throw(
+				type = "DogStatsDClient.InvalidEventTitle",
+				message = "Event title is invalid.",
+				detail = "The event title [#newTitle#] cannot contain line breaks."
+			);
+
+		}
+
+	}
+
+
+	/**
 	* I test the given statsD key. If the value is invalid, I throw an error; otherwise,
 	* I just return quietly.
 	* 
@@ -498,7 +813,7 @@ component
 
 			throw(
 				type = "DogStatsDClient.InvalidKey",
-				message = "The given key is invalid.",
+				message = "Metric key is invalid.",
 				detail = "The metric key cannot be empty."
 			);
 
@@ -508,7 +823,7 @@ component
 
 			throw(
 				type = "DogStatsDClient.InvalidKey",
-				message = "The given key is invalid.",
+				message = "Metric key is invalid.",
 				detail = "The metric key cannot contain leading or trailing whitespace."
 			);
 
@@ -518,18 +833,18 @@ component
 
 			throw(
 				type = "DogStatsDClient.InvalidKey",
-				message = "The given key is invalid.",
+				message = "Metric key is invalid.",
 				detail = "The metric key [#newKey#] must start with a letter."
 			);
 
 		}
 
-		if ( find( "[:|@]", newKey ) ) {
+		if ( reFind( "[:|@]", newKey ) ) {
 
 			throw(
 				type = "DogStatsDClient.InvalidKey",
-				message = "The given key is invalid.",
-				detail = "The metric key [#newKey#] cannot contain the reserved characters [|, :, @]."
+				message = "Metric key is invalid.",
+				detail = "The metric key [#newKey#] cannot contain the reserved characters: '|', ':', or '@'."
 			);
 
 		}
@@ -550,8 +865,8 @@ component
 
 			throw(
 				type = "DogStatsDClient.InvalidPrefix",
-				message = "The given prefix is invalid.",
-				detail = "The prefix cannot contain leading or trailing whitespace."
+				message = "Metric prefix is invalid.",
+				detail = "The metric prefix cannot contain leading or trailing whitespace."
 			);
 
 		}
@@ -560,8 +875,8 @@ component
 
 			throw(
 				type = "DogStatsDClient.InvalidPrefix",
-				message = "The given prefix is invalid.",
-				detail = "The prefix [#newPrefix#] cannot contain the reserved characters [:, |, @]."
+				message = "Metric prefix is invalid.",
+				detail = "The metric prefix [#newPrefix#] cannot contain the reserved characters: ':', '|', or '@'."
 			);
 
 		}
@@ -582,8 +897,8 @@ component
 
 			throw(
 				type = "DogStatsDClient.InvalidRate",
-				message = "The given sample rate is invalid.",
-				detail = "The sample rate must be between zero (exclusive) and one (inclusive)."
+				message = "Metric sample rate is invalid.",
+				detail = "The metric sample rate must be between zero (exclusive) and one (inclusive)."
 			);
 
 		}
@@ -604,8 +919,8 @@ component
 
 			throw(
 				type = "DogStatsDClient.InvalidSuffix",
-				message = "The given suffix is invalid.",
-				detail = "The suffix cannot contain leading or trailing whitespace."
+				message = "Metric suffix is invalid.",
+				detail = "The metric suffix cannot contain leading or trailing whitespace."
 			);
 
 		}
@@ -614,8 +929,8 @@ component
 
 			throw(
 				type = "DogStatsDClient.InvalidSuffix",
-				message = "The given suffix is invalid.",
-				detail = "The suffix [#newSuffix#] cannot contain the reserved characters [:, |]."
+				message = "Metric suffix is invalid.",
+				detail = "The metric suffix [#newSuffix#] cannot contain the reserved characters: ':' or '|'."
 			);
 
 		}
@@ -636,7 +951,7 @@ component
 
 			throw(
 				type = "DogStatsDClient.InvalidTag",
-				message = "The given tag is invalid.",
+				message = "Tag is invalid.",
 				detail = "The tag [#newTag#] cannot contain leading or trailing whitespace."
 			);
 
@@ -646,18 +961,18 @@ component
 
 			throw(
 				type = "DogStatsDClient.InvalidTag",
-				message = "The given tag is invalid.",
+				message = "Tag is invalid.",
 				detail = "The tag [#newTag#] must start with a letter."
 			);
 
 		}
 
-		if ( reFind( "^(device|host|source):", newTag ) ) {
+		if ( reFindNoCase( "^(device|host|source):", newTag ) ) {
 
 			throw(
 				type = "DogStatsDClient.InvalidTag",
-				message = "The given tag is invalid.",
-				detail = "The tag [#newTag#] contains a reserved key. The keys [device, host, source] cannot be defined in the standard way."
+				message = "Tag is invalid.",
+				detail = "The tag [#newTag#] cannot contain the reserved keys: 'device:', 'host:', or 'source:'."
 			);
 
 		}
@@ -666,8 +981,8 @@ component
 
 			throw(
 				type = "DogStatsDClient.InvalidTag",
-				message = "The given tag is invalid.",
-				detail = "The tag [#newTag#] must less than or equal to 200 characters."
+				message = "Tag is invalid.",
+				detail = "The tag [#newTag#] must be less than or equal to 200 characters."
 			);
 
 		}

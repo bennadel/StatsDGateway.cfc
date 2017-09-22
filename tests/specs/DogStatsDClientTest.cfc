@@ -237,6 +237,43 @@ component
 	}
 
 
+	public void function test_that_events_work() {
+
+		// Since we want to test the through-put, we are going to manually construct a client
+		// that uses a capturing transport rather than a UDP transport.
+		var transport = new lib.transport.CaptureTransport();
+		var sampler = new lib.sampler.RandomSampler();
+		var client = new lib.client.DogStatsDClient( transport, sampler )
+			.setTags( [ "first:a", "first-b" ] )
+		;
+
+		client.event( "hello", "world!", 12345 );
+		client.event( "hello", "brave#chr( 13 )##chr( 10 )#new#chr( 10 )#world!", 12345 );
+		client.event(
+			title = "hello",
+			text = "world!",
+			timestamp = 12345,
+			hostname = "hvalue",
+			aggregationKey = "akvalue",
+			priority = "low",
+			sourceTypeName = "stnvalue",
+			alertType = "info",
+			tags = [ "tk:v,tk" ]
+		);
+
+		var sentMessages = transport.getSentMessages();
+
+		var expectedMessages = [
+			"_e{5,6}:hello|world!|d:12345|##first:a,first-b",
+			"_e{5,20}:hello|brave\\nnew\\nworld!|d:12345|##first:a,first-b",
+			"_e{5,6}:hello|world!|d:12345|h:hvalue|k:akvalue|p:low|s:stnvalue|t:info|##first:a,first-b,tk:v,tk"
+		];
+
+		assert( serializeJson( sentMessages ) == serializeJson( expectedMessages ) );
+
+	}
+
+
 	public void function test_that_destroy_method_propagates_to_capture_transport() {
 
 		var transport = new lib.transport.CaptureTransport();
