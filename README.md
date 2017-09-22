@@ -162,12 +162,18 @@ search and filter events in DataDogHQ:
 
 * title - I am the title of the event.
 * text - I am the text of the event (can be empty, can contain line breaks).
-* timestamp - I am the UTC **SECONDS** of the event (default is now).
+* timestamp - I am the UTC seconds of the event (default is now).
 * hostname - I am the hostname of the event.
 * aggregationKey - I am the shared aggregation key of the event (allowing events to be grouped).
-* priority - I am the priority of the event (default is "normal").
+* priority - I am the priority of the event (default is "normal"). Possible values:
+  * "normal" - `DogStatsDClient.PRIORITY.NORMAL`
+  * "low" - `DogStatsDClient.PRIORITY.LOW`
 * sourceTypeName - I am the source type of the event.
-* alertType - I am the alert level of the event (default is "info").
+* alertType - I am the alert level of the event (default is "info"). Possible values:
+  * "error" - `DogStatsDClient.ALERT_TYPE.ERROR`
+  * "warning" - `DogStatsDClient.ALERT_TYPE.WARNING`
+  * "info" - `DogStatsDClient.ALERT_TYPE.INFO`
+  * "success" - `DogStatsDClient.ALERT_TYPE.SUCCESS`
 * tags - I am the collection of tags associated with the event.
 
 ### Service Checks
@@ -177,11 +183,11 @@ method:
 
 * name - Required. I am the name of the service whose status being reported.
 * status - Required. I am the status of the given service. Possible values:
-  * "ok"
-  * "warning"
-  * "critical"
-  * "unknown"
-* timestamp - I am the UTC secodns of the service check (default is now).
+  * "ok" - `DogStatsDClient.STATUS.OK`
+  * "warning" - `DogStatsDClient.STATUS.WARNING`
+  * "critical" - `DogStatsDClient.STATUS.CRITICAL`
+  * "unknown" - `DogStatsDClient.STATUS.UNKNOWN`
+* timestamp - I am the UTC seconds of the service check (default is now).
 * hostname - I am the hostname of the service check.
 * tags - I am the collection of tags associated with the service check.
 * message - I am a message to associate with the service check.
