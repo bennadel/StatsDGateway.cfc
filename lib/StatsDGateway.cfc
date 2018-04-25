@@ -59,9 +59,9 @@ component
 
 		var sampler = new sampler.RandomSampler();
 
-		var client = new client.StatsDClient( transport, sampler, prefix, suffix );
+		var c = new sdclient.StatsDClient( transport, sampler, prefix, suffix );
 
-		return( client );
+		return( c );
 
 	}
 
@@ -103,7 +103,7 @@ component
 
 		var sampler = new sampler.RandomSampler();
 
-		var client = new client.DogStatsDClient(
+		var c = new sdclient.DogStatsDClient(
 			transport = transport,
 			sampler = sampler,
 			prefix = prefix,
@@ -111,7 +111,7 @@ component
 			tags = tags
 		);
 
-		return( client );
+		return( c );
 
 	}
 
